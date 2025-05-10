@@ -28,7 +28,15 @@
       {
         devShells.default = pkgs.mkShell {
           nativeBuildInputs = with pkgs.buildPackages; [ rust-bin.beta.latest.default ];
-          packages = with pkgs; [ cargo-watch ];
+          packages = with pkgs; [
+            cargo-watch
+            sqlx-cli
+            sqlite
+          ];
+
+          env = {
+            DATABASE_URL = "sqlite:bruttan.db";
+          };
         };
       }
     );
