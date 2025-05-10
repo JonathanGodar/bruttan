@@ -1,0 +1,9 @@
+[package]
+name = "bruttan"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+axum = "0.8.4"
+sqlx = { version = "0.8.5", features = ["macros", "runtime-tokio", "sqlite"] }
+tokio = { version = "1.45.0", features = ["full", "macros", "rt-multi-thread"] }
