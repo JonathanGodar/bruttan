@@ -32,6 +32,12 @@
             cargo-watch
             sqlx-cli
             sqlite
+            sqlfluff
+
+            # Needed for rust reqwest crate
+            # https://nixos.wiki/wiki/Rust
+            openssl
+            pkg-config
           ];
 
           env = {
