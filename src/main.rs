@@ -1,13 +1,14 @@
+mod models;
+mod routes;
 mod services;
 
 use anyhow::Result;
-use axum::{Router, routing::get};
-use reqwest::{ClientBuilder, Identity};
-use serde_json::json;
-use services::testytest;
-use std::{collections::HashMap, env, error::Error, fs};
+use dotenvy::dotenv;
+use reqwest::{Identity, Url};
+use services::Swish;
+use std::{error::Error, fs};
 
-use sqlx::{Connection, SqliteConnection, prelude::*};
+use sqlx::postgres::PgPoolOptions;
 
 // #[derive(Debug, FromRow)]
 // struct ItemGroup {
@@ -83,7 +84,14 @@ use sqlx::{Connection, SqliteConnection, prelude::*};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    let a = dotenvy::dotenv()?;
+    dotenvy::dotenv()?;
+
+    let db_conn_string = dotenvy::var("DATABASE_URL")?;
+
+    let db = PgPoolOptions::new()
+        .max_connections(5)
+        .connect(&db_conn_string)
+        .await?;
 
     let pem_path = dotenvy::var("SWISH_PEM_FILE_PATH")?;
     let pk_path = dotenvy::var("SWISH_KEY_FILE_PATH")?;
@@ -94,30 +102,36 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let cert = fs::read(pem_path)?;
     let key = fs::read(pk_path)?;
 
-    println!("hello world!");
-
     let id = Identity::from_pkcs8_pem(&cert, &key)?;
 
-    let client = ClientBuilder::new().identity(id).build()?;
+    let swish_url = Url::parse("https://mss.cpc.getswish.net/swish-cpcapi/")?;
+    let callback_url = Url::parse("https://ngodag.com/hejsan")?;
 
-    let payload = json!({
-        "payeeAlias": "1234679304",
-        "amount": 10,
-        "callbackUrl": "https://tun1.ngodar.com/api/swish/callback",
-        "currency": "SEK",
-        "message": "HELLOWORLD"
-    }
-    );
+    let a = Swish::new(swish_url, callback_url, id, "1234679304".into())?;
 
-    let response = client
-        .put("https://mss.cpc.getswish.net/swish-cpcapi/api/v2/paymentrequests/0BE6E5B43EB441B6B54FBD2907C4ACEA").json(&payload)
-    //     // .put("https://mss.cpc.getswish.net/swish-cpcapi/api/v2/paymentrequests/OOOGABOOOGAA1234565")
-        .send()
+    a.create_swish_payment(&db, 10, "Hejsan hoppsan fallerallera")
         .await?;
-    // .text()
-    // .await?;
-    dbg!(response.headers());
-    println!("{:?}", response.text().await?);
+
+    // let client = ClientBuilder::new().identity(id).build()?;
+    //
+    // let payload = json!({
+    //     "payeeAlias": "1234679304",
+    //     "amount": 10,
+    //     "callbackUrl": "https://tun1.ngodar.com/api/swish/callback",
+    //     "currency": "SEK",
+    //     "message": "HELLOWORLD"
+    // }
+    // );
+    //
+    // let response = client
+    //     .put("https://mss.cpc.getswish.net/swish-cpcapi/api/v2/paymentrequests/0BE6E5B43EB441B6B54FBD2907C4ACEA").json(&payload)
+    // //     // .put("https://mss.cpc.getswish.net/swish-cpcapi/api/v2/paymentrequests/OOOGABOOOGAA1234565")
+    //     .send()
+    //     .await?;
+    // // .text()
+    // // .await?;
+    // dbg!(response.headers());
+    // println!("{:?}", response.text().await?);
 
     // let app = Router::new()
     //     // `GET /` goes to `root`

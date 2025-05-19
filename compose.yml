@@ -1,0 +1,39 @@
+services:
+  # server:
+  #   build: bittan
+  #   ports:
+  #     - '8000:8000'
+  #   volumes:
+  #     - ./bittan:/bittan
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #   env_file: ./bittan_server_debug.env.txt
+  #   environment:
+  #     PYTHONUNBUFFERED: 1
+  #     ALLOWED_HOSTS: '["*"]'
+  #     DATABASE_HOST: postgres
+  #     DATABASE_NAME: bittan_db
+  #     DATABASE_USER: postgres
+  #     DATABASE_PORT: 5432
+  #     DEBUG: "True"
+  #   container_name: bittan_server
+  postgres:
+    image: postgres
+    volumes:
+      - bruttan_postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: bruttan
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - '5432:5432'
+    container_name: bruttan_postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 1s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  bruttan_postgres_data:

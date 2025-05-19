@@ -2,3 +2,4 @@
 .direnv
 server/
 bruttan.db
+.env

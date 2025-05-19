@@ -33,6 +33,7 @@
             sqlx-cli
             sqlite
             sqlfluff
+            postgresql
 
             # Needed for rust reqwest crate
             # https://nixos.wiki/wiki/Rust
@@ -41,7 +42,9 @@
           ];
 
           env = {
-            DATABASE_URL = "sqlite:bruttan.db";
+            # DATABASE_URL = "sqlite:bruttan.db";
+            # Format "postgres://<username>:<password>@<host>:<port>/<database_name>"
+            DATABASE_URL = "postgres://postgres:postgres@localhost:5432/bruttan";
           };
         };
       }
