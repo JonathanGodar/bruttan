@@ -20,8 +20,8 @@ services:
   #   container_name: bittan_server
   postgres:
     image: postgres
-    volumes:
-      - bruttan_postgres_data:/var/lib/postgresql/data
+    # volumes:
+    #   - bruttan_postgres_data:/var/lib/postgresql/data
     environment:
       POSTGRES_DB: bruttan
       POSTGRES_USER: postgres

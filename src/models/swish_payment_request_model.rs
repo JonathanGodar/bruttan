@@ -5,7 +5,7 @@ use sqlx::{
     types::{Uuid, time::PrimitiveDateTime},
 };
 
-use crate::services::SwishPaymentRequestStatus;
+use crate::services::{SwishPaymentRequest, SwishPaymentRequestStatus};
 
 // #[derive(FromRow)]
 #[derive(sqlx::Type, Debug)]
@@ -17,6 +17,7 @@ pub enum SwishPaymentRequestModelStatus {
     Declined,
     Cancelled,
     Timedout,
+    Unknown,
 }
 
 #[derive(FromRow)]
@@ -41,6 +42,10 @@ impl SwishPaymentRequestModel {
 
         Ok(inserted)
     }
+
+    // pub async fn update(db: &PgPool, swish: SwishPaymentRequest) -> anyhow::Result<()> {
+    //     todo!()
+    // }
 
     pub async fn get(db: &PgPool, id: Uuid) -> Result<SwishPaymentRequestModel> {
         let a = sqlx::query_as!(

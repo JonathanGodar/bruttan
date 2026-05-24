@@ -1,9 +1,13 @@
 use std::path::Path;
+use std::time::Duration;
 
 use anyhow::Context;
 use anyhow::anyhow;
+use chrono::prelude::*;
 use reqwest::StatusCode;
 use reqwest::{Client, Identity, Url};
+use serde::Deserialize;
+use serde_json::Number;
 use serde_json::json;
 use sqlx::{PgPool, types::Uuid};
 use thiserror::Error;
@@ -20,6 +24,20 @@ mod swish_service;
 //     #[error("Negative Payment Amount")]
 //     NegativePaymentAmount,
 // }
+//
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct SwishPaymentRequestResponse {
+    id: String,
+    callback_url: String,
+    amount: Number,
+    status: String,
+    date_created: DateTime<Utc>,
+    date_paid: Option<DateTime<Utc>>,
+    error_code: Option<String>,
+    error_message: Option<String>,
+}
 
 pub struct Swish {
     client: reqwest::Client,
@@ -28,6 +46,7 @@ pub struct Swish {
     payee_alias: String,
 }
 
+#[derive(Debug)]
 pub enum SwishPaymentRequestStatus {
     Paid,
     Pending,
@@ -36,9 +55,10 @@ pub enum SwishPaymentRequestStatus {
     Error,
 }
 
+#[derive(Debug)]
 pub struct SwishPaymentRequest {
-    id: Uuid,
-    status: SwishPaymentRequestStatus,
+    pub id: Uuid,
+    pub status: SwishPaymentRequestStatus,
 }
 
 impl From<SwishPaymentRequestModel> for SwishPaymentRequest {
@@ -70,8 +90,39 @@ impl Swish {
         })
     }
 
+    fn update_swish_payment(pg: &PgPool, req_response: SwishPaymentRequestResponse) {
+        todo!()
+    }
+
+    fn payment_request_endpoint(&self, id: Uuid) -> anyhow::Result<Url> {
+        let a = self.base_url.join(&format!(
+            "api/v2/paymentrequests/{}",
+            id.simple().to_string().to_uppercase()
+        ))?;
+
+        Ok(a)
+    }
+
+    pub async fn sync_swish_payment(&self, id: Uuid) -> anyhow::Result<()> {
+        dbg!("Syncing");
+        let url = self.base_url.join(&format!(
+            "api/v1/paymentrequests/{}",
+            id.simple().to_string().to_uppercase()
+        ))?;
+
+        tokio::time::sleep(Duration::from_secs(5)).await;
+
+        let response = self.client.get(url).send().await?;
+        // dbg!(response.text().await);
+        // dbg!(response.text().await?);
+        let response: SwishPaymentRequestResponse = response.json().await?;
+        dbg!(response);
+        // .map(|s| serde_json::from_str::<SwishPaymentRequestResponse>(s));
+        Ok(())
+    }
+
     pub async fn create_swish_payment(
-        self,
+        &self,
         db: &PgPool,
         amount: i32,
         message: &str,
@@ -97,12 +148,13 @@ impl Swish {
         //     "currency": "SEK",
         //     "message": message
         // });
-        dbg!(&self.base_url);
         // let url = self.base_url + &format!("/api/v2/paymentrequests/{}", model.id.simple())?;
-        let url = self.base_url.join(&format!(
-            "api/v2/paymentrequests/{}",
-            model_id.simple().to_string().to_uppercase()
-        ))?;
+        let url = self.payment_request_endpoint(model_id)?;
+
+        // let url = self.base_url.join(&format!(
+        //     "api/v2/paymentrequests/{}",
+        //     model_id.simple().to_string().to_uppercase()
+        // ))?;
         // .join(&format!("api/v2/paymentrequests/{}", 0BE6E5B43EB441B6B54FBD2907C4ACEB))?;
         //
         // TODO Hanlde errors more elegantly
@@ -124,6 +176,8 @@ impl Swish {
             .context("Payment request token header was not set, but payment was created")?
             .to_str()?
             .to_string();
+
+        self.sync_swish_payment(model_id).await?;
 
         let model = SwishPaymentRequestModel::get(db, model_id).await?;
         Ok(model.into())
