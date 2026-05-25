@@ -24,8 +24,39 @@ paths:
             application/json; charset=utf-8:
               schema:
                 $ref: '#/components/schemas/Hejsan'
+  /hej2:
+    get:
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Hejsan'
+        '500':
+          description: ''
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/CoolErrorType'
 components:
   schemas:
+    CoolErrorType:
+      type: object
+      title: CoolErrorType
+      required:
+      - a
+      - b
+      - c
+      properties:
+        a:
+          type: integer
+          format: uint32
+        b:
+          type: integer
+          format: int32
+        c:
+          type: string
     Hejsan:
       type: object
       title: Hejsan

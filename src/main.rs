@@ -10,7 +10,6 @@ use poem_openapi::{
     ApiResponse, Object, OpenApi, OpenApiService,
     payload::{Json, PlainText},
 };
-use serde::{Deserialize, Serialize};
 
 // #[derive(Debug, Serialize, Deserialize)]
 // struct ResponseData {
@@ -22,10 +21,20 @@ struct Hejsan {
     hej: u64,
 }
 
+#[derive(Object)]
+struct CoolErrorType {
+    a: u32,
+    b: i32,
+    c: String,
+}
+
 #[derive(ApiResponse)]
 enum HejsanResponse {
     #[oai(status = 200)]
-    Ok(PlainText<&'static str>),
+    Ok(Json<Hejsan>),
+
+    #[oai(status = 500)]
+    NotInterested(Json<CoolErrorType>),
 }
 
 struct Api;
@@ -39,6 +48,15 @@ impl Api {
     #[oai(path = "/hej", method = "get")]
     async fn hej(&self) -> Json<Hejsan> {
         Json(Hejsan { hej: 28 })
+    }
+
+    #[oai(path = "/hej2", method = "get")]
+    async fn hej2(&self) -> HejsanResponse {
+        HejsanResponse::NotInterested(Json(CoolErrorType {
+            a: 1,
+            b: -3 - 3,
+            c: "hejsan svejsan världen".into(),
+        }))
     }
 }
 

@@ -20,7 +20,7 @@ const $api = createClient(fetchClient);
 function App() {
   const [count, setCount] = useState(0)
 
-  const { data, error, isLoading } = $api.useQuery("get", "/hej");
+  const { data, error, isLoading } = $api.useQuery("get", "/hej2");
 
 
   // const { data: num, isLoading: numLoading, error: numErr } = useGetHej();
@@ -32,7 +32,7 @@ function App() {
   console.log(data)
 
   if (error) {
-    console.log(error)
+    console.log(error.c)
     return <p>Error fuk</p>
   }
 
