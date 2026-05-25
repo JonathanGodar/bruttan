@@ -3,21 +3,36 @@ import reactLogo from './assets/react.svg'
 import viteLogo from './assets/vite.svg'
 import heroImg from './assets/hero.png'
 import './App.css'
+import createFetchClient from "openapi-fetch";
+import createClient from "openapi-react-query";
 import { useGet, useGetHej } from './api/default/default'
+import type { paths } from './api/v1'
+
+
+
+
+
+const fetchClient = createFetchClient<paths>({
+  baseUrl: "http://localhost:3000/api",
+});
+const $api = createClient(fetchClient);
 
 function App() {
   const [count, setCount] = useState(0)
 
-  const { data: num, isLoading: numLoading, error: numErr } = useGetHej();
+  const { data, error, isLoading } = $api.useQuery("get", "/hej");
+
+
+  // const { data: num, isLoading: numLoading, error: numErr } = useGetHej();
   // const { data, isLoading, error } = useGet();
 
-  if (numLoading) return (<p> Loading...</p>)
+  if (isLoading) return (<p> Loading...</p>)
 
 
-  console.log(num)
+  console.log(data)
 
-  if (numErr) {
-    console.log(numErr)
+  if (error) {
+    console.log(error)
     return <p>Error fuk</p>
   }
 
@@ -26,10 +41,8 @@ function App() {
     <>
       <h1> Hejsan svejsan </h1>
 
-      <p>{num?.hej}</p>
+      <p>{data?.hej}</p>
       <p>what defuk</p>
-
-
 
 
     </>
