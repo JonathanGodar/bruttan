@@ -39,6 +39,9 @@
             # https://nixos.wiki/wiki/Rust
             openssl
             pkg-config
+
+            # For the frontend
+            nodejs
           ];
 
           env = {
