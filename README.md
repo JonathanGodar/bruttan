@@ -9,3 +9,10 @@ Check required dependencies in flake.nix :) (or install nix package manger + dir
 - cargo run # did you do the step above?
 
 Running the rust code generates the open api specification which can then be compiled to generate typescript types
+
+
+When in the frontend directory do the following
+```bash
+npm install --dev --force
+npm run generate-api # To update the api types from the rust backend
+```
