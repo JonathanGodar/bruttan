@@ -20,7 +20,8 @@ const $api = createClient(fetchClient);
 function App() {
   const [count, setCount] = useState(0)
 
-  const { data, error, isLoading } = $api.useQuery("get", "/hej2");
+  const { data, error, isLoading } = $api.useQuery("get", "/hesdflkjj");
+
 
 
   // const { data: num, isLoading: numLoading, error: numErr } = useGetHej();

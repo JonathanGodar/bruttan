@@ -1,3 +1,5 @@
+mod chapter_event;
+
 mod models;
 mod routes;
 mod services;
@@ -5,16 +7,21 @@ mod services;
 use std::{error::Error, fs};
 
 use anyhow::Result;
+use dotenvy::{dotenv, var};
 use poem::{EndpointExt, Route, Server, listener::TcpListener, middleware::Cors};
 use poem_openapi::{
     ApiResponse, Object, OpenApi, OpenApiService,
     payload::{Json, PlainText},
 };
+use sqlx::PgPool;
+
+use crate::chapter_event::handlers::ChapterEventApi;
 
 // #[derive(Debug, Serialize, Deserialize)]
 // struct ResponseData {
 //     hejsan: u8,
 // };
+//
 
 #[derive(Object)]
 struct Hejsan {
@@ -60,24 +67,35 @@ impl Api {
     }
 }
 
+struct Api2;
+#[OpenApi]
+impl Api2 {
+    #[oai(path = "/faksing", method = "get")]
+    async fn index(&self) -> PlainText<&'static str> {
+        PlainText("wtf2")
+    }
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    let api_service =
-        OpenApiService::new(Api, "Hello world", "1.0.0").server("http://localhost:3000/api");
+    let api_service = OpenApiService::new((Api, ChapterEventApi), "Hello world", "1.0.0")
+        .server("http://localhost:3000/api");
 
     fs::write("api.yaml", api_service.spec_yaml()).unwrap();
     let ui = api_service.swagger_ui();
 
     let cors = Cors::new();
+    let pg_pool = PgPool::connect(var("DATABASE_URL").unwrap().as_str())
+        .await
+        .unwrap();
     let app = Route::new()
-        .nest("/api", api_service)
+        .nest("/api", api_service.data(pg_pool))
         .nest("/docs", ui)
         .with(cors);
 
-    // let cors = Cors::new().allow_credentials(false);
-
     Server::new(TcpListener::bind("localhost:3000"))
         .run(app)
-        .await;
+        .await
+        .unwrap();
     return Ok(());
 }

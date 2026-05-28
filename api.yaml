@@ -39,8 +39,57 @@ paths:
             application/json; charset=utf-8:
               schema:
                 $ref: '#/components/schemas/CoolErrorType'
+  /chapter_event:
+    get:
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json; charset=utf-8:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ChapterEvent'
 components:
   schemas:
+    ChapterEvent:
+      type: object
+      title: ChapterEvent
+      required:
+      - id
+      - title
+      - description
+      - sales_stop_at
+      - event_at
+      - fcfs
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        total_seats:
+          type: integer
+          format: int32
+        max_tickets_per_payment:
+          type: integer
+          format: int32
+        sales_stop_at:
+          type: string
+          format: date-time
+        reservation_duration_seconds:
+          type: integer
+          format: int32
+        event_at:
+          type: string
+          format: date-time
+        door_open_before:
+          type: string
+          format: date-time
+        fcfs:
+          type: boolean
     CoolErrorType:
       type: object
       title: CoolErrorType

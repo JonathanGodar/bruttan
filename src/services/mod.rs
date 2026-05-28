@@ -3,7 +3,6 @@ use std::time::Duration;
 
 use anyhow::Context;
 use anyhow::anyhow;
-use chrono::prelude::*;
 use reqwest::StatusCode;
 use reqwest::{Client, Identity, Url};
 use serde::Deserialize;
@@ -11,6 +10,7 @@ use serde_json::Number;
 use serde_json::json;
 use sqlx::{PgPool, types::Uuid};
 use thiserror::Error;
+use time::OffsetDateTime;
 
 use crate::models::swish_payment_request_model::SwishPaymentRequestModel;
 
@@ -33,8 +33,8 @@ struct SwishPaymentRequestResponse {
     callback_url: String,
     amount: Number,
     status: String,
-    date_created: DateTime<Utc>,
-    date_paid: Option<DateTime<Utc>>,
+    date_created: OffsetDateTime,
+    date_paid: OffsetDateTime,
     error_code: Option<String>,
     error_message: Option<String>,
 }
